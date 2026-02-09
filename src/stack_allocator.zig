@@ -1,12 +1,20 @@
 const std = @import("std");
 
 const StackAllocator = struct {
-    var pointer: usize = 0;
+    pointer: usize = 0,
+    buffer: []u8,
 
-    pub fn alloc() void {}
+    pub fn init(buffer: []u8) StackAllocator {
+        return StackAllocator{
+            .pointer = 0,
+            .buffer = buffer,
+        };
+    }
+
+    pub fn alloc() ?[*]u8 {}
     pub fn free() void {}
-    pub fn resize() void {}
-    pub fn remap() void {}
+    pub fn resize() bool {}
+    pub fn remap() ?[*]u8 {}
 
     const vtable = std.mem.Allocator.VTable{
         .alloc = alloc,
