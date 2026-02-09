@@ -11,7 +11,23 @@ const StackAllocator = struct {
         };
     }
 
-    pub fn alloc() ?[*]u8 {}
+    pub fn alloc(ctx: *anyopaque, len: usize, alignment: std.mem.Alignment, _: usize) ?[*]u8 {
+        const self: *StackAllocator = @ptrCast(@alignCast(ctx));
+
+        const absPointer = @intFromPtr(self.buffer.ptr) + self.pointer;
+        const memStart = alignment.forward(absPointer);
+        const alignmentOffset = memStart - absPointer;
+
+        const requiredMemory = len + alignmentOffset;
+        const freeMemory = self.buffer.len - self.pointer;
+        if (requiredMemory > freeMemory) {
+            return null;
+        }
+
+        self.pointer += len + alignmentOffset;
+        return @ptrFromInt(memStart);
+    }
+
     pub fn free() void {}
     pub fn resize() bool {}
     pub fn remap() ?[*]u8 {}
