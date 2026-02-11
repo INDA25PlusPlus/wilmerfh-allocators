@@ -45,6 +45,7 @@ const StackAllocator = struct {
         _: usize,
     ) bool {
         const self: *StackAllocator = @ptrCast(@alignCast(ctx));
+
         const base = @intFromPtr(self.buffer.ptr);
         const memStart = @intFromPtr(memory.ptr);
         const memEnd = memStart + memory.len;
@@ -60,7 +61,14 @@ const StackAllocator = struct {
         return true;
     }
 
-    pub fn remap() ?[*]u8 {}
+    pub fn remap(ctx: *anyopaque, memory: []u8, alignment: std.mem.Alignment, new_len: usize, ret_addr: usize) ?[*]u8 {
+        const self: *StackAllocator = @ptrCast(@alignCast(ctx));
+
+        if (self.resize(ctx, memory, alignment, new_len, ret_addr)) {
+            return memory.ptr;
+        }
+        return null;
+    }
 
     const vtable = std.mem.Allocator.VTable{
         .alloc = alloc,
