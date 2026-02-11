@@ -28,7 +28,15 @@ const StackAllocator = struct {
         return @ptrFromInt(memStart);
     }
 
-    pub fn free() void {}
+    pub fn free(ctx: *anyopaque, memory: []u8, _: std.mem.Alignment, _: usize) void {
+        // TODO: Handle alignment issues
+        // If the allocations alignment caused an offset to be inserted before
+        // this memory block, that offset memory won't be freed
+
+        const self: *StackAllocator = @ptrCast(@alignCast(ctx));
+        self.pointer -= memory.len;
+    }
+
     pub fn resize() bool {}
     pub fn remap() ?[*]u8 {}
 
