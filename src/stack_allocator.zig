@@ -1,6 +1,6 @@
 const std = @import("std");
 
-const StackAllocator = struct {
+pub const StackAllocator = struct {
     pointer: usize = 0,
     buffer: []u8,
 
