@@ -29,7 +29,7 @@ pub const MemoryTree = struct {
             .buffer = buffer,
             .state = .free,
             .leftChild = init(left_half, min_block_size),
-            .rightchild = init(right_half, min_block_size),
+            .rightChild = init(right_half, min_block_size),
         };
     }
 };
