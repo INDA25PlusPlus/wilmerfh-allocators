@@ -60,14 +60,70 @@ pub const BuddyAllocator = struct {
         return i;
     }
 
+    fn push(self: *BuddyAllocator, block: *Head) void {
+        block.next = self.flists[block.level];
+        block.prev = null;
+        if (self.flists[block.level]) |first| {
+            first.prev = block;
+        }
+        self.flists[block.level] = block;
+    }
+
+    fn remove(self: *BuddyAllocator, block: *Head) void {
+        if (block.prev) |prev| {
+            prev.next = block.next;
+        } else {
+            self.flists[block.level] = block.next;
+        }
+        if (block.next) |next| {
+            next.prev = block.prev;
+        }
+    }
+
+    fn find(self: *BuddyAllocator, idx: usize) ?*Head {
+        if (idx >= LEVELS) return null;
+
+        if (self.flists[idx]) |block| {
+            self.remove(block);
+            block.status = .taken;
+            return block;
+        }
+
+        const block = self.find(idx + 1) orelse return null;
+        const bud = split(block);
+        self.push(bud);
+        block.status = .taken;
+        return block;
+    }
+
+    fn insert(self: *BuddyAllocator, block: *Head) void {
+        if (block.level >= LEVELS - 1) {
+            block.status = .free;
+            self.push(block);
+            return;
+        }
+
+        const bud = buddy(block);
+        if (bud.status == .free and bud.level == block.level) {
+            self.remove(bud);
+            const pri = primary(block);
+            pri.level += 1;
+            self.insert(pri);
+        } else {
+            block.status = .free;
+            self.push(block);
+        }
+    }
+
     pub fn alloc(self: *BuddyAllocator, size: usize) ?[*]u8 {
-        _ = self;
-        _ = size;
-        return null;
+        if (size == 0) return null;
+        const idx = getLevel(size) orelse return null;
+        const block = self.find(idx) orelse return null;
+        return hide(block);
     }
 
     pub fn free(self: *BuddyAllocator, memory: [*]u8) void {
-        _ = self;
-        _ = memory;
+        const block = magic(memory);
+        self.insert(block);
     }
 };
