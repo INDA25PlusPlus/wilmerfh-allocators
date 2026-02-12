@@ -39,60 +39,14 @@ pub const BuddyAllocator = struct {
     min_block_size: usize,
     root: MemoryTree,
 
-    fn alloc(ctx: *anyopaque, len: usize, alignment: std.mem.Alignment, ret_addr: usize) ?[*]u8 {
-        _ = ctx;
+    pub fn alloc(self: *BuddyAllocator, len: usize) ?[*]u8 {
+        _ = self;
         _ = len;
-        _ = alignment;
-        _ = ret_addr;
-
         return null;
     }
 
-    fn free(ctx: *anyopaque, memory: []u8, alignment: std.mem.Alignment, ret_addr: usize) void {
-        _ = ctx;
+    pub fn free(self: *BuddyAllocator, memory: [*]u8) void {
+        _ = self;
         _ = memory;
-        _ = alignment;
-        _ = ret_addr;
-    }
-
-    fn resize(
-        ctx: *anyopaque,
-        memory: []u8,
-        alignment: std.mem.Alignment,
-        new_len: usize,
-        ret_addr: usize,
-    ) bool {
-        _ = ctx;
-        _ = memory;
-        _ = alignment;
-        _ = new_len;
-        _ = ret_addr;
-        return false;
-    }
-
-    fn remap(
-        ctx: *anyopaque,
-        memory: []u8,
-        alignment: std.mem.Alignment,
-        new_len: usize,
-        ret_addr: usize,
-    ) ?[*]u8 {
-        _ = ctx;
-        _ = memory;
-        _ = alignment;
-        _ = new_len;
-        _ = ret_addr;
-        return null;
-    }
-
-    const vtable = std.mem.Allocator.VTable{
-        .alloc = alloc,
-        .free = free,
-        .resize = resize,
-        .remap = remap,
-    };
-
-    pub fn allocator(self: *BuddyAllocator) std.mem.Allocator {
-        return .{ .ptr = self, .vtable = &vtable };
     }
 };
